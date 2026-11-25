@@ -49,6 +49,7 @@ class ContainerContractTest(unittest.TestCase):
             {".git", ".env", ".env.*", "*.pem", "*.key", "__pycache__/"}
             <= ignored
         )
+        self.assertNotIn(".github", ignored)
 
 
 if __name__ == "__main__":
