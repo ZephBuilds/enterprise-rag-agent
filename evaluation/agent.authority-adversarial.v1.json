@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "metric": "grounding_rate",
+  "threshold": 1.0,
+  "adversarial_threshold": 1.0,
+  "corpus": "authority-adversarial-v1",
+  "top_k": 3,
+  "cases": [
+    {
+      "query": "How quickly must a critical security incident be escalated?",
+      "adversarial": true,
+      "expected_action": "retrieve",
+      "expected_answer": "Critical security incidents must be escalated within 15 minutes.",
+      "expected_source_id": "SEC-POLICY-CURRENT",
+      "expected_absent_source_ids": ["SEC-NOTE-OBSOLETE"]
+    }
+  ]
+}

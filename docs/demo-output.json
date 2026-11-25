@@ -1,0 +1,25 @@
+{
+  "citations": [
+    "[SEC-IR-001]",
+    "[OPS-BC-003]"
+  ],
+  "evidence": [
+    {
+      "authority": 0,
+      "citation": "[SEC-IR-001]",
+      "excerpt": "Critical security incidents must be escalated to the incident commander within 15 minutes of detection. High-severity incidents must be escalated within 60 minutes.",
+      "score": 11.497744,
+      "source_id": "SEC-IR-001",
+      "title": "Security incident escalation policy"
+    },
+    {
+      "authority": 0,
+      "citation": "[OPS-BC-003]",
+      "excerpt": "The operations team runs a business continuity recovery exercise every quarter. Results are documented by the continuity lead.",
+      "score": 1.916291,
+      "source_id": "OPS-BC-003",
+      "title": "Business continuity exercise"
+    }
+  ],
+  "query": "How quickly must a critical security incident be escalated?"
+}

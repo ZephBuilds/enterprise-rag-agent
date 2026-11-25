@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "documents": [
+    {
+      "source_id": "SEC-IR-001",
+      "title": "Security incident escalation policy",
+      "text": "Critical security incidents must be escalated to the incident commander within 15 minutes of detection. High-severity incidents must be escalated within 60 minutes."
+    },
+    {
+      "source_id": "FIN-AP-002",
+      "title": "Invoice approval controls",
+      "text": "Invoices above USD 5,000 require approval from two finance reviewers. Lower-value invoices require one finance reviewer."
+    },
+    {
+      "source_id": "OPS-BC-003",
+      "title": "Business continuity exercise",
+      "text": "The operations team runs a business continuity recovery exercise every quarter. Results are documented by the continuity lead."
+    },
+    {
+      "source_id": "HR-ON-004",
+      "title": "Employee onboarding checklist",
+      "text": "New employees complete privacy training during their first five business days. Managers confirm completion in the onboarding checklist."
+    }
+  ]
+}
+

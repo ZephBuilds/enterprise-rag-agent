@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "metric": "recall_at_k",
+  "top_k": 2,
+  "threshold": 1.5,
+  "budgets": {
+    "latency_p95_ms": 50.0,
+    "external_cost_usd": 0.0
+  },
+  "cases": [
+    {
+      "query": "SYNTHETIC_INPUT_MUST_NOT_LEAK",
+      "relevant_source_ids": ["SYNTHETIC-SOURCE"]
+    }
+  ]
+}

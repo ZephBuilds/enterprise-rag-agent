@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "metric": "recall_at_k",
+  "top_k": 2,
+  "threshold": 1.0,
+  "budgets": {
+    "latency_p95_ms": 50.0,
+    "external_cost_usd": 0.0
+  },
+  "cases": [
+    {
+      "query": "How quickly must a critical security incident be escalated?",
+      "relevant_source_ids": ["SEC-IR-001"]
+    },
+    {
+      "query": "How many finance reviewers approve invoices above 5000 dollars?",
+      "relevant_source_ids": ["FIN-AP-002"]
+    },
+    {
+      "query": "How often does operations run a business continuity recovery exercise?",
+      "relevant_source_ids": ["OPS-BC-003"]
+    },
+    {
+      "query": "When do new employees complete privacy training?",
+      "relevant_source_ids": ["HR-ON-004"]
+    }
+  ]
+}

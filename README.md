@@ -1,0 +1,185 @@
+# Enterprise RAG Agent — Grounded Offline Agent
+
+> Public portfolio project by Josef González (`@ZephBuilds`). The corpus, policies, evaluations, and
+> outputs are fictional and contain no private organizational data.
+
+This public, sanitized portfolio project demonstrates the first vertical slice of
+an enterprise RAG system: deterministic offline retrieval plus a small agent
+loop and versioned evaluations over fictional company documents.
+
+The agent chooses `retrieve` or `abstain`. A retrieved answer is one sentence
+copied exactly from the returned evidence, never generated or paraphrased, and
+its citation must identify that evidence. It abstains with `answer: null` when
+fewer than two informative query terms overlap a source.
+
+## What is included
+
+- A fictional, non-sensitive enterprise document corpus.
+- Dependency-free lexical retrieval with deterministic ranking.
+- Source governance metadata: non-current documents are excluded, then
+  authoritative sources outrank lower-authority matches.
+- JSON CLI output containing evidence and citations.
+- Deterministic routing, extractive answers, and safe abstention.
+- A versioned evaluation set with explicit recall, latency, and external-cost
+  budgets.
+- A separate versioned grounding/faithfulness gate with positive, negative,
+  and adversarial conflict cases.
+- Standard-library `unittest` coverage; no network, credentials, or third-party
+  packages.
+
+## Run the demo
+
+Python 3.10+ is sufficient. No network, API key, or package installation is
+required.
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli demo \
+  "How quickly must a critical security incident be escalated?" --top-k 2
+```
+
+Every citation in the response is built from the retrieved evidence itself and
+uses the form `[SOURCE_ID]`.
+
+See the concise [architecture and trust boundaries](docs/architecture.md) and
+the [sanitized output captured from this exact command](docs/demo-output.json).
+The test suite regenerates the output through the CLI and requires an exact
+match, so the public example cannot silently drift from the executable demo.
+For a one-page account of the problem, constraints, engineering trade-offs,
+reproducible results, and limitations, read the sanitized
+[case study](docs/case-study.md).
+
+The versioned adversarial corpus
+`fixtures/documents.authority-adversarial.v1.json` makes source precedence
+reproducible offline. Its obsolete note deliberately repeats more query terms
+than the current policy, while an unofficial current source states the same
+conflict. The retrieval test succeeds only when the obsolete source is absent
+and `SEC-POLICY-CURRENT` ranks above the lower-authority source.
+
+The agent gate can select this corpus through the allowlisted logical selector
+`authority-adversarial-v1`; evaluation files cannot supply filesystem paths.
+The dedicated conflict gate also asserts that the obsolete source is absent
+while the current lower-authority source remains unable to displace the
+authoritative answer:
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli evaluate-agent \
+  --evaluation evaluation/agent.authority-adversarial.v1.json
+```
+
+Run the complete agent loop:
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli agent \
+  "How quickly must a critical security incident be escalated?"
+```
+
+## Run the evaluation
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli evaluate
+```
+
+The command reports `recall_at_k`, retrieval latency p50/p95, estimated external
+cost, their configured budgets, and a boolean `passed` value. It exits non-zero
+if recall or either budget is missed, making the check suitable for CI.
+
+The retrieval gate remains independent and unchanged. Run the agent gate with:
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli evaluate-agent
+```
+
+It reports `grounding_rate`, decision accuracy, per-case results,
+`adversarial_pass_rate`, its explicit `adversarial_threshold`, and `passed`.
+Grounding requires a retrieve answer to be an exact substring of cited evidence;
+an abstention must contain neither an answer nor citations. Expected exact
+answers and sources additionally catch regressions. Adversarial cases are
+marked in the versioned fixture and include an instruction to ignore policy and
+a false temporal conflict. The command exits non-zero if the general or
+adversarial threshold, or any case-level condition, fails.
+
+Both evaluation commands fail closed on missing, unreadable, non-UTF-8,
+malformed, or semantically invalid specifications. Validation covers the
+versioned metric, threshold, retrieval depth, budgets, queries, relevance
+labels, and coherent agent expectations before any case runs. Invalid input
+exits with code 2 and only a sanitized JSON error on stderr
+(`invalid_evaluation`); it never echoes evaluation contents or file paths.
+The public [invalid fixture](evaluation/retrieval.invalid.v1.json) deliberately
+uses an out-of-range threshold. Its versioned [failure output](docs/invalid-evaluation-output.v1.json)
+is regenerated by the offline test suite and compared byte-for-byte with the
+real CLI stderr, including checks that no fixture content, path, or traceback
+is disclosed.
+
+Latency uses Python's monotonic high-resolution clock around each in-process
+lexical `search` call. It excludes process startup, corpus loading, JSON parsing,
+and network time. The 50 ms p95 budget is therefore a deliberately tolerant CI
+regression guard for this tiny fixture, not a production benchmark or SLA;
+results vary with the host and should be load-tested separately before setting
+an operational SLO.
+
+## Run one complete offline verification
+
+Use the single-command portfolio check to execute the canonical demo, retrieval
+gate, general agent gate, and authority-adversarial agent gate:
+
+```bash
+PYTHONPATH=src python3 -m enterprise_rag.cli verify
+```
+
+It prints only a deterministic JSON map of boolean check statuses plus a global
+`passed` value. Queries, case details, metrics, and filesystem paths are never
+included. The command uses only the standard library and local fixtures, makes
+no network calls, and exits non-zero when any gate fails. It complements rather
+than replaces the unit-test and byte-compilation checks below. Its sanitized,
+versioned [canonical output](docs/verify-output.v1.json) is regenerated by the
+offline test suite and compared byte-for-byte with the real CLI stdout.
+
+Estimated external cost is exactly USD 0 for the full evaluation run because
+the retriever is dependency-free and offline: it makes no paid API, embedding,
+database, or LLM calls. This metric does not estimate a hypothetical generation
+stage, which is outside the scope of this retrieval-only slice.
+
+## Run the CI contract locally
+
+CI runs on Ubuntu with Python 3.10 and 3.12. It installs no packages and makes
+no runtime network calls. Reproduce its three required gates locally with:
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+python3 -m compileall -q src tests
+PYTHONPATH=src python3 -m enterprise_rag.cli verify
+```
+
+Every command must exit successfully. The workflow applies this contract to
+each push and pull request.
+
+## Run the complete gate in a container
+
+The container uses only Python's standard library and runs as an unprivileged
+numeric user. Build it from the project root (the base image must already be
+available when building without network access):
+
+```bash
+docker build --network none --tag enterprise-rag-agent:ci .
+```
+
+Its default command runs the unit tests and byte-compilation check as separate
+gates, followed by the canonical `verify` summary (retrieval, general-agent,
+and authority/currency adversarial checks). No credentials, mounted files, or
+network access are required:
+
+```bash
+docker run --rm --network none enterprise-rag-agent:ci
+```
+
+Any failed check makes the container exit non-zero. The offline unit suite also
+checks the Dockerfile and build-context exclusion contract without requiring a
+Docker daemon. CI executes these same literal build and run commands; both the
+image build and container runtime have network access disabled, and the image is
+kept only on the ephemeral runner rather than published.
+
+## Scope and next increment
+
+This is intentionally an offline, extractive baseline rather than an LLM claim.
+A later increment can compare a model-backed synthesizer against this gate while
+keeping the fictional corpus and the deterministic baseline as safety controls.

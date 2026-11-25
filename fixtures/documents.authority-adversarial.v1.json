@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "documents": [
+    {
+      "source_id": "SEC-POLICY-CURRENT",
+      "title": "Current security incident policy",
+      "text": "Critical security incidents must be escalated within 15 minutes.",
+      "authority": 100,
+      "is_current": true
+    },
+    {
+      "source_id": "SEC-NOTE-OBSOLETE",
+      "title": "Obsolete security escalation note",
+      "text": "Critical security incidents may wait 24 hours before escalation. This obsolete security incident escalation note repeats critical security incidents and escalation.",
+      "authority": 100,
+      "is_current": false
+    },
+    {
+      "source_id": "SEC-BLOG-UNTRUSTED",
+      "title": "Unofficial security escalation blog",
+      "text": "Critical security incidents may wait 24 hours before escalation. This unofficial security incident escalation blog repeats critical security incidents and escalation.",
+      "authority": 10,
+      "is_current": true
+    }
+  ]
+}

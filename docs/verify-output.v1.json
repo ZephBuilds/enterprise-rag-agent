@@ -1,0 +1,17 @@
+{
+  "checks": {
+    "agent": {
+      "passed": true
+    },
+    "agent_authority_adversarial": {
+      "passed": true
+    },
+    "demo": {
+      "passed": true
+    },
+    "retrieval": {
+      "passed": true
+    }
+  },
+  "passed": true
+}
